@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import { fetchUserData } from '@/libs/redux/thunks/user'
+import { auth } from '@/libs/redux/store';
+import { useDispatch } from 'react-redux';
 
 import { Grid, Typography } from '@mui/material';
 import Image from 'next/image';
@@ -7,12 +10,13 @@ import ImageURLs from '@/assets/urls';
 
 import styles from './styles';
 
+import { firestore } from '@/libs/redux/store';
 import { ToolsListingContainer } from '@/tools';
 import Filters from '@/tools/components/Filter/Filters';
 import SearchBar from '@/tools/components/SearchBar/SearchBar';
 import SortDropdown from '@/tools/components/SortDorpdown/SortDropdown';
-import Favorites from '@/tools/views/Favorites/Favorites';
 import ReccomendedForYou from '@/tools/views/ReccomendedForYou/ReccomendedForYou';
+import { updateFavorites } from '@/libs/services/user/updateFavorites';
 
 const TABS = [
   'All',
@@ -29,13 +33,40 @@ const HomePage = ({ data: unsortedData, loading }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('Most Popular');
   const [favorites, setFavorites] = useState([]); // State to track favorite tool IDs
+  const dispatch = useDispatch();
 
-  const handleToggleFavorite = (id) => {
-    setFavorites((prevFavorites) =>
-      prevFavorites.includes(id)
-        ? prevFavorites.filter((favId) => favId !== id) // Remove if already in favorites
-        : [...prevFavorites, id] // Add if not in favorites
-    );
+
+  useEffect(() => {
+    if (auth.currentUser?.uid) {
+      dispatch(fetchUserData({ firestore, id: auth.currentUser.uid }))
+        .unwrap()
+        .then((userMetadata) => {
+          setFavorites(userMetadata.favoriteToolsId || []);
+        })
+        .catch(() => {
+        
+          setFavorites([]); 
+        });
+    }
+  }, []);
+  
+
+  const handleToggleFavorite = (toolId) => {
+    const userId = auth.currentUser?.uid; // Ensure the user is authenticated
+    if (!userId) {
+      console.error('User not authenticated');
+      return;
+    }
+    setFavorites((prevFavorites) => {
+      const isFavorite = prevFavorites.includes(toolId);
+  
+      updateFavorites(userId, toolId, isFavorite ? 'remove' : 'add');
+  
+  
+      return isFavorite
+        ? prevFavorites.filter((favId) => favId !== toolId) 
+        : [...prevFavorites, toolId];
+    });
   };
 
   const data = [...(unsortedData || [])].sort((a, b) => a.id - b.id);
@@ -114,10 +145,12 @@ const HomePage = ({ data: unsortedData, loading }) => {
     <Grid {...styles.mainGridProps}>
       {renderWelcomeBanner()}
       {renderFilters()}
-      <Favorites
-        favoriteTools={favoriteTools}
-        handleToggleFavorite={handleToggleFavorite}
+      <ToolsListingContainer
+        data={favoriteTools}
+        loading={loading}
         favorites={favorites}
+        handleToggleFavorite={handleToggleFavorite}
+        category="Favorites"
       />
       <ReccomendedForYou data={sortedData} loading={loading} />
       <ToolsListingContainer

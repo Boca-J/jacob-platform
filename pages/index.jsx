@@ -7,6 +7,7 @@ import HomePage from '@/templates/HomePage';
 
 import fetchTools from '@/libs/redux/thunks/tools';
 
+
 const Home = () => {
   const { data, loading, error } = useSelector((state) => state.tools);
 
@@ -15,6 +16,8 @@ const Home = () => {
   useEffect(() => {
     if (!data) dispatch(fetchTools());
   }, []);
+
+  
 
   return <HomePage data={data} loading={loading} error={error} />;
 };

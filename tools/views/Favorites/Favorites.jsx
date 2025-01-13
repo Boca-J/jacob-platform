@@ -14,6 +14,8 @@ const Favorites = ({ favoriteTools = [], handleToggleFavorite, favorites }) => {
     </Grid>
   );
 
+
+
   const renderCards = () => (
     <Grid {...styles.containerGridProps}>
       <Grid {...styles.innerListGridProps}>
@@ -39,6 +41,33 @@ const Favorites = ({ favoriteTools = [], handleToggleFavorite, favorites }) => {
       </Grid>
     </Grid>
   );
+
+
+  // const renderCards = () => (
+  //   <Grid {...styles.containerGridProps}>
+  //     <Grid {...styles.innerListGridProps}>
+  //       {favoriteTools.length > 0 ? (
+  //         favoriteTools.map((tool) => (
+  //           <Grid item key={tool.id} xs={12} sm={6} md={4}>
+  //             <ToolOutputHistoryDrawer data={tool} />
+  //             <IconButton
+  //               onClick={() => handleToggleFavorite(tool.id)}
+  //               sx={{ position: 'absolute', bottom: 16, right: 16 }}
+  //             >
+  //               {favorites.includes(tool.id) ? (
+  //                 <Star sx={{ color: '#9d74ff' }} />
+  //               ) : (
+  //                 <StarBorder />
+  //               )}
+  //             </IconButton>
+  //           </Grid>
+  //         ))
+  //       ) : (
+  //         <Typography />
+  //       )}
+  //     </Grid>
+  //   </Grid>
+  // );
 
   return (
     <Grid {...styles.mainGridProps}>
