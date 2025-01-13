@@ -1,11 +1,11 @@
 import React from 'react';
 import { Grid, Typography, IconButton, Card, Chip } from '@mui/material';
-import { Star, StarBorder } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import styles from './styles'; // Assuming styles is an object with the necessary styles
 
 import { TOOLS_ID } from '@/tools/libs/constants/tools';
+import  FavoriteButton from '@/tools/components/FavoriteButton'
 
 /**
  * Returns a Tool Card component with an image and a chip displaying the amount of coins.
@@ -60,19 +60,10 @@ const ToolCard = ({ id, name, description, maskedToolUrl, backgroundImgURL, favo
             <Typography sx={{ position: 'relative', bottom: 0, right: 100 }}>
             {renderLabel()}
             </Typography>
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent the click from propagating to the card
-              handleToggleFavorite(id);
-            }}
-            sx={{ position: 'relative', bottom: 0, right: 0 }}
-            >
-            {favorites.includes(id) ? (
-              <Star sx={{ color: '#9d74ff' }} />
-            ) : (
-              <StarBorder />
-            )}
-          </IconButton>
+            <FavoriteButton
+              isFavorite={favorites.includes(id)}
+              onToggleFavorite={() => handleToggleFavorite(id)}
+            />
         </Grid>
       </Card>
     </Grid>
