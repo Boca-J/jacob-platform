@@ -6,7 +6,7 @@ import styles from './styles'; // Assuming styles is an object with the necessar
 
 import { TOOLS_ID } from '@/tools/libs/constants/tools';
 import  FavoriteButton from '@/tools/components/FavoriteButton'
-
+ç
 /**
  * Returns a Tool Card component with an image and a chip displaying the amount of coins.
  *
