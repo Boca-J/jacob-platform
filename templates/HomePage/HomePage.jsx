@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Grid, Typography } from '@mui/material';
 import Image from 'next/image';
 
+import { useDispatch, useSelector } from 'react-redux';
+
 import ImageURLs from '@/assets/urls';
 
 import styles from './styles';
+
+import { firestore } from '@/libs/redux/store';
+import { updateUserFavorite } from '@/libs/redux/thunks/user';
 
 import { ToolsListingContainer } from '@/tools';
 import Filters from '@/tools/components/Filter/Filters';
@@ -30,13 +35,25 @@ const HomePage = ({ data: unsortedData, loading }) => {
   const [sortOption, setSortOption] = useState('Most Popular');
   const [favorites, setFavorites] = useState([]); // State to track favorite tool IDs
 
+  const user = useSelector((state) => state?.user);
+  const dispatch = useDispatch();
   const handleToggleFavorite = (id) => {
-    setFavorites((prevFavorites) =>
-      prevFavorites.includes(id)
+    setFavorites((prevFavorites) => {
+      const updatedFavorites = prevFavorites.includes(id)
         ? prevFavorites.filter((favId) => favId !== id) // Remove if already in favorites
-        : [...prevFavorites, id] // Add if not in favorites
-    );
+        : [...prevFavorites, id]; // Add if not in favorites
+      const updatedFavoritesObj = { favorites: updatedFavorites };
+      dispatch(
+        updateUserFavorite({ firestore, favorites: updatedFavoritesObj })
+      );
+      return updatedFavorites;
+    });
   };
+  useEffect(() => {
+    if (user?.data?.favorites) {
+      setFavorites(user.data.favorites);
+    }
+  }, [user]);
 
   const data = [...(unsortedData || [])].sort((a, b) => a.id - b.id);
 
