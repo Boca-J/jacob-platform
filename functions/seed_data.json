@@ -2,7 +2,9 @@
   "ai-resistant-assignments-generator": {
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Dynamo.png?alt=media&token=db14183f-a294-49b2-a9de-0818b007c080",
     "description": "Get recommendations for designing assignments that are more resistant to AI-generated solutions.",
+    "category": ["Assignments"],
     "id": "ai-resistant-assignments-generator",
+
     "inputs": [
       {
         "defaultValue": "5th grade",
@@ -235,6 +237,7 @@
   "connect-with-them": {
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Dynamo.png?alt=media&token=db14183f-a294-49b2-a9de-0818b007c080",
     "description": "Generate personalized project recommendations based on task details and student profiles!",
+    "category": ["Planning"],
     "id": "connect-with-them",
     "inputs": [
       {
@@ -412,6 +415,7 @@
   "flashcard-generator": {
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Dynamo.png?alt=media&token=db14183f-a294-49b2-a9de-0818b007c080",
     "description": "Creates flash cards from a youtube video.",
+    "category": ["Study", "Assessments"],
     "id": "flashcard-generator",
     "inputs": [
       {
@@ -490,6 +494,7 @@
   "lesson-generator": {
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Dynamo.png?alt=media&token=db14183f-a294-49b2-a9de-0818b007c080",
     "description": "Create a table rubric based on assignment specific information or uploaded documents!",
+    "category": ["Assignments", "Assignments"],
     "id": "lesson-generator",
     "inputs": [
       {
@@ -672,6 +677,7 @@
   "multiple-choice-quiz-generator": {
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Quizify.png?alt=media&token=d1255f27-b1a1-444e-b96a-4a3ac559237d",
     "description": "Create a multiple choice quiz based on any topic and standard(s)",
+    "category": ["Study", "Assessments"],
     "id": "multiple-choice-quiz-generator",
     "inputs": [
       {
@@ -776,6 +782,7 @@
   "presentation-generator": {
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Dynamo.png?alt=media&token=db14183f-a294-49b2-a9de-0818b007c080",
     "description": "Extract concise, structured, summarized notes from various types of inputs!",
+    "category": ["Study", "Writing"],
     "id": "presentation-generator",
     "inputs": [
       {
@@ -969,6 +976,7 @@
   "rubric-generator": {
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Dynamo.png?alt=media&token=db14183f-a294-49b2-a9de-0818b007c080",
     "description": "Create a table rubric based on assignment specific information or uploaded documents!",
+    "category": ["Assignments", "Assessments"],
     "id": "rubric-generator",
     "inputs": [
       {
@@ -1153,6 +1161,7 @@
   "syllabus-generator": {
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Dynamo.png?alt=media&token=db14183f-a294-49b2-a9de-0818b007c080",
     "description": "Generate a detailed syllabus for any course or grade level.",
+    "category": ["Planning"],
     "id": "syllabus-generator",
     "inputs": [
       {
@@ -1432,6 +1441,7 @@
   "worksheet-generator": {
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Dynamo.png?alt=media&token=db14183f-a294-49b2-a9de-0818b007c080",
     "description": "Generate customized worksheets for any topic and grade level.",
+    "category": ["Assignments", "Assessments"],
     "id": "worksheet-generator",
     "inputs": [
       {
@@ -1548,6 +1558,7 @@
     "backgroundImgURL": "https://firebasestorage.googleapis.com/v0/b/kai-ai-f63c8.appspot.com/o/Dynamo.png?alt=media&token=db14183f-a294-49b2-a9de-0818b007c080",
     "description": "Take any text and rewrite it with custom criteria however you’d like!",
     "id": "writing-feedback-generator",
+    "category": ["Writing"],
     "inputs": [
       {
         "defaultValue": "5th grade",

@@ -112,9 +112,9 @@ const HomePage = ({ data: unsortedData, loading }) => {
   });
   
 
-  // const filteredTools = data.filter((tool) => {
-  //   return currentTab === 'All' || tool.category === currentTab;
-  // });
+  const filteredTools = searchTools.filter((tool) => {
+    return currentTab === 'All' || tool.category.includes(currentTab);
+  });
 
   // const sortedData = unsortedData.sort((a, b) => {
   //   if (sortOption === 'A-Z') return a.name.localeCompare(b.name);
@@ -126,12 +126,12 @@ const HomePage = ({ data: unsortedData, loading }) => {
   // });
 
   // contains the favorite tools data and will be passed to toolist container
-  const favoriteTools = data.filter((tool) =>
+  const favoriteTools = filteredTools.filter((tool) =>
     favorites.includes(tool.id)
   );
 
   // contains the 'recommend for you' tools data and will be passed to toolist container
-  const recommendTools = getTopTools(ToolsFrequency, data);
+  const recommendTools = getTopTools(ToolsFrequency, filteredTools);
 
 
   // Welcome Banner
@@ -211,7 +211,7 @@ const HomePage = ({ data: unsortedData, loading }) => {
      
      
       <ToolsListingContainer
-        data={searchTools}
+        data={filteredTools}
         loading={loading}
         favorites={favorites}
         handleToggleFavorite={handleToggleFavorite}
