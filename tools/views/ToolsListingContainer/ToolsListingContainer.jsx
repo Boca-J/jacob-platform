@@ -18,6 +18,7 @@ const DEFAULT_TOOLS = new Array(8)
  * @param {function} props.handleToggleFavorite - Function to toggle a tool as favorite.
  * @param {string} props.category - The category of the tools.
  * @param {boolean} props.loading - Whether the data is still loading.
+ * @param {boolean} props.userloading - Whether the userData is still loading.
  * @return {JSX.Element} The rendered Tools Listings component.
  */
 const ToolsListingContainer = ({
@@ -44,6 +45,7 @@ const ToolsListingContainer = ({
       if (!aInToolsId && bInToolsId) return 1;
       return 0;
     });
+
 
     return (
       <Grid {...styles.containerGridProps}>

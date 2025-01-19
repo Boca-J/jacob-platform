@@ -14,6 +14,7 @@ const styles = {
     mobileSmall: true,
     justifyContent: 'center',
     alignItems: 'flex-start',
+    minWidth: '1200px', // prevent shrinks horizontally
   },
   innerListGridProps: {
     container: true,
@@ -40,6 +41,7 @@ const styles = {
     fontSize: '18px',
     color: '#6E6D73',
   },
+  
 };
 
 export default styles;

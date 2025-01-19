@@ -1,10 +1,11 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect,useMemo } from 'react';
 import { fetchUserData } from '@/libs/redux/thunks/user'
 import { auth } from '@/libs/redux/store';
 import { useDispatch } from 'react-redux';
 
 import { Grid, Typography } from '@mui/material';
 import Image from 'next/image';
+import { debounce } from 'lodash';
 
 import ImageURLs from '@/assets/urls';
 
@@ -15,7 +16,6 @@ import { ToolsListingContainer } from '@/tools';
 import Filters from '@/tools/components/Filter/Filters';
 import SearchBar from '@/tools/components/SearchBar/SearchBar';
 import SortDropdown from '@/tools/components/SortDorpdown/SortDropdown';
-import ReccomendedForYou from '@/tools/views/ReccomendedForYou/ReccomendedForYou';
 import { updateFavorites } from '@/libs/services/user/updateFavorites';
 
 const TABS = [
@@ -29,30 +29,52 @@ const TABS = [
 ];
 
 const HomePage = ({ data: unsortedData, loading }) => {
+
+  
   const [currentTab, setCurrentTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('Most Popular');
   const [favorites, setFavorites] = useState([]); // State to track favorite tool IDs
+  const [ToolsFrequency, setToolsFrequency] = useState([]);
+
+
   const dispatch = useDispatch();
 
+  // Function to extract top tools based on freqyebct
+  const getTopTools = (toolsFrequency, data, limit = 4) => {
+    
+    // Sort tools by frequency and get top tool IDs
+    const topToolIds = Object.entries(toolsFrequency)
+      .sort(([, freqA], [, freqB]) => freqB - freqA)
+      .slice(0, limit)
+      .map(([toolId]) => toolId);
+
+    // Filter tools from the existing data array
+    
+    return data.filter((tool) => topToolIds.includes(tool.id));
+  };
 
   useEffect(() => {
-    if (auth.currentUser?.uid) {
-      dispatch(fetchUserData({ firestore, id: auth.currentUser.uid }))
-        .unwrap()
-        .then((userMetadata) => {
-          setFavorites(userMetadata.favoriteToolsId || []);
-        })
-        .catch(() => {
-        
-          setFavorites([]); 
-        });
-    }
+    // fetch user data and use the favortietools and toolsfrequency columns to set the states
+    const fetchData = async () => {
+      if (auth.currentUser.uid) {
+        try {
+          const userData = await dispatch(fetchUserData({ firestore, id: auth.currentUser.uid })).unwrap();
+          setFavorites(userData.favoriteToolsId || []);
+          setToolsFrequency(userData.toolsFrequency || [])
+   
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        } 
+      }
+    };
+
+    fetchData();
   }, []);
   
-
+  // Add (or remove) the tool to user "favorite" column. Update the favorite state 
   const handleToggleFavorite = (toolId) => {
-    const userId = auth.currentUser?.uid; // Ensure the user is authenticated
+    const userId = auth.currentUser?.uid; 
     if (!userId) {
       console.error('User not authenticated');
       return;
@@ -62,36 +84,55 @@ const HomePage = ({ data: unsortedData, loading }) => {
   
       updateFavorites(userId, toolId, isFavorite ? 'remove' : 'add');
   
-  
       return isFavorite
         ? prevFavorites.filter((favId) => favId !== toolId) 
         : [...prevFavorites, toolId];
     });
   };
 
+  
   const data = [...(unsortedData || [])].sort((a, b) => a.id - b.id);
+  
+  const handleSearch = debounce((query) => {
+    setSearchQuery(query);
+  }, 300);
 
-  // Filter and search logic
-  const filteredData = data.filter((tool) => {
-    const matchesSearch = tool.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesTab = currentTab === 'All' || tool.category === currentTab;
-    return matchesSearch && matchesTab;
+
+  // Cleanup debounce on unmount
+  React.useEffect(() => {
+    return () => handleSearch.cancel(); // Cancel any pending debounce calls
+  }, [handleSearch]);
+
+  const searchTools = data.filter((tool) => {
+    const lowerQuery = searchQuery.toLowerCase();
+    return (
+      tool.name.toLowerCase().includes(lowerQuery) ||
+      tool.description.toLowerCase().includes(lowerQuery)
+    );
   });
+  
 
-  const sortedData = filteredData.sort((a, b) => {
-    if (sortOption === 'A-Z') return a.name.localeCompare(b.name);
-    if (sortOption === 'Z-A') return b.name.localeCompare(a.name);
-    if (sortOption === 'Most Popular') return b.popularity - a.popularity;
-    if (sortOption === 'Recently Added')
-      return new Date(b.date) - new Date(a.date);
-    return 0;
-  });
+  // const filteredTools = data.filter((tool) => {
+  //   return currentTab === 'All' || tool.category === currentTab;
+  // });
 
-  const favoriteTools = sortedData.filter((tool) =>
+  // const sortedData = unsortedData.sort((a, b) => {
+  //   if (sortOption === 'A-Z') return a.name.localeCompare(b.name);
+  //   if (sortOption === 'Z-A') return b.name.localeCompare(a.name);
+  //   if (sortOption === 'Most Popular') return b.popularity - a.popularity;
+  //   if (sortOption === 'Recently Added')
+  //     return new Date(b.date) - new Date(a.date);
+  //   return 0;
+  // });
+
+  // contains the favorite tools data and will be passed to toolist container
+  const favoriteTools = data.filter((tool) =>
     favorites.includes(tool.id)
   );
+
+  // contains the 'recommend for you' tools data and will be passed to toolist container
+  const recommendTools = getTopTools(ToolsFrequency, data);
+
 
   // Welcome Banner
   const renderWelcomeBanner = () => (
@@ -125,7 +166,7 @@ const HomePage = ({ data: unsortedData, loading }) => {
         justifyContent="space-between"
       >
         <Grid item>
-          <SearchBar onSearch={setSearchQuery} />
+          <SearchBar onSearch={handleSearch} />
         </Grid>
         <Grid item>
           <SortDropdown sortOption={sortOption} setSortOption={setSortOption} />
@@ -145,16 +186,32 @@ const HomePage = ({ data: unsortedData, loading }) => {
     <Grid {...styles.mainGridProps}>
       {renderWelcomeBanner()}
       {renderFilters()}
+
+      {!searchQuery && ( 
+        <>
+          <ToolsListingContainer
+            data={favoriteTools}
+            loading={loading}
+            favorites={favorites}
+            handleToggleFavorite={handleToggleFavorite}
+            category="Favorites"
+          />
+          <ToolsListingContainer
+            data={recommendTools}
+            loading={loading}
+            favorites={favorites}
+            handleToggleFavorite={handleToggleFavorite}
+            category="Recommended For You"
+          />
+        </>
+        
+
+
+      )}
+     
+     
       <ToolsListingContainer
-        data={favoriteTools}
-        loading={loading}
-        favorites={favorites}
-        handleToggleFavorite={handleToggleFavorite}
-        category="Favorites"
-      />
-      <ReccomendedForYou data={sortedData} loading={loading} />
-      <ToolsListingContainer
-        data={sortedData}
+        data={searchTools}
         loading={loading}
         favorites={favorites}
         handleToggleFavorite={handleToggleFavorite}

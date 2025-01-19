@@ -4,9 +4,12 @@ import { useRouter } from 'next/router';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import styles from './styles'; // Assuming styles is an object with the necessary styles
 
+import { auth } from '@/libs/redux/store';
 import { TOOLS_ID } from '@/tools/libs/constants/tools';
 import  FavoriteButton from '@/tools/components/FavoriteButton'
-ç
+import { updateToolFrequency } from '@/libs/services/user/updateToolFrequency';
+
+
 /**
  * Returns a Tool Card component with an image and a chip displaying the amount of coins.
  *
@@ -29,8 +32,11 @@ const ToolCard = ({ id, name, description, maskedToolUrl, backgroundImgURL, favo
 
   const handleRoute = () => {
     if (isPublished) {
+      const userId = auth.currentUser.uid;
+      updateToolFrequency(userId, id)
       router.push(`/${maskedToolUrl}`);
     }
+
   };
 
   const renderTitle = () => {
