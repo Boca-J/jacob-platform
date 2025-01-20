@@ -93,6 +93,16 @@ const HomePage = ({ data: unsortedData, loading }) => {
   
   const data = [...(unsortedData || [])].sort((a, b) => a.id - b.id);
   
+  const sortedData = data.sort((a, b) => {
+    if (sortOption === 'A-Z') return a.name.localeCompare(b.name);
+    if (sortOption === 'Z-A') return b.name.localeCompare(a.name);
+    if (sortOption === 'Most Popular') return b.popularity - a.popularity;
+    if (sortOption === 'Recently Added')
+      return new Date(b.date) - new Date(a.date);
+  return 0;
+  });
+
+
   const handleSearch = debounce((query) => {
     setSearchQuery(query);
   }, 300);
@@ -103,7 +113,7 @@ const HomePage = ({ data: unsortedData, loading }) => {
     return () => handleSearch.cancel(); // Cancel any pending debounce calls
   }, [handleSearch]);
 
-  const searchTools = data.filter((tool) => {
+  const searchTools = sortedData.filter((tool) => {
     const lowerQuery = searchQuery.toLowerCase();
     return (
       tool.name.toLowerCase().includes(lowerQuery) ||
@@ -116,14 +126,7 @@ const HomePage = ({ data: unsortedData, loading }) => {
     return currentTab === 'All' || tool.category.includes(currentTab);
   });
 
-  // const sortedData = unsortedData.sort((a, b) => {
-  //   if (sortOption === 'A-Z') return a.name.localeCompare(b.name);
-  //   if (sortOption === 'Z-A') return b.name.localeCompare(a.name);
-  //   if (sortOption === 'Most Popular') return b.popularity - a.popularity;
-  //   if (sortOption === 'Recently Added')
-  //     return new Date(b.date) - new Date(a.date);
-  //   return 0;
-  // });
+
 
   // contains the favorite tools data and will be passed to toolist container
   const favoriteTools = filteredTools.filter((tool) =>
