@@ -1,112 +1,95 @@
-import React, { useState,useEffect,useMemo } from 'react';
-import { fetchUserData } from '@/libs/redux/thunks/user'
-import { auth } from '@/libs/redux/store';
-import { useDispatch } from 'react-redux';
+import React, { useState, useEffect, useMemo } from "react";
+import { fetchUserData } from "@/libs/redux/thunks/user";
+import { auth } from "@/libs/redux/store";
+import { useDispatch } from "react-redux";
 
-import { Grid, Typography } from '@mui/material';
-import Image from 'next/image';
-import { debounce } from 'lodash';
+import { Grid, Typography } from "@mui/material";
+import Image from "next/image";
+import { debounce } from "lodash";
 
-import ImageURLs from '@/assets/urls';
+import ImageURLs from "@/assets/urls";
 
-import styles from './styles';
+import styles from "./styles";
 
-import { firestore } from '@/libs/redux/store';
-import { ToolsListingContainer } from '@/tools';
-import Filters from '@/tools/components/Filter/Filters';
-import SearchBar from '@/tools/components/SearchBar/SearchBar';
-import SortDropdown from '@/tools/components/SortDorpdown/SortDropdown';
-import { updateFavorites } from '@/libs/services/user/updateFavorites';
+import { firestore } from "@/libs/redux/store";
+import { ToolsListingContainer } from "@/tools";
+import Filters from "@/tools/components/Filter/Filters";
+import SearchBar from "@/tools/components/SearchBar/SearchBar";
+import SortDropdown from "@/tools/components/SortDorpdown/SortDropdown";
+import Favorites from "@/tools/views/Favorites";
+import RecomendedForYou from "@/tools/views/RecomendedForYou";
+import { updateFavorites } from "@/libs/services/user/updateFavorites";
 
 const TABS = [
-  'All',
-  'New',
-  'Planning',
-  'Assessments',
-  'Assignments',
-  'Writing',
-  'Study',
+  "All",
+  "New",
+  "Planning",
+  "Assessments",
+  "Assignments",
+  "Writing",
+  "Study",
 ];
 
 const HomePage = ({ data: unsortedData, loading }) => {
-
-  
-  const [currentTab, setCurrentTab] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState('Most Popular');
+  const [currentTab, setCurrentTab] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("Most Popular");
   const [favorites, setFavorites] = useState([]); // State to track favorite tool IDs
-  const [ToolsFrequency, setToolsFrequency] = useState([]);
-
+  const [toolsFrequency, setToolsFrequency] = useState([]);
 
   const dispatch = useDispatch();
-
-  // Function to extract top tools based on freqyebct
-  const getTopTools = (toolsFrequency, data, limit = 4) => {
-    
-    // Sort tools by frequency and get top tool IDs
-    const topToolIds = Object.entries(toolsFrequency)
-      .sort(([, freqA], [, freqB]) => freqB - freqA)
-      .slice(0, limit)
-      .map(([toolId]) => toolId);
-
-    // Filter tools from the existing data array
-    
-    return data.filter((tool) => topToolIds.includes(tool.id));
-  };
 
   useEffect(() => {
     // fetch user data and use the favortietools and toolsfrequency columns to set the states
     const fetchData = async () => {
       if (auth.currentUser.uid) {
         try {
-          const userData = await dispatch(fetchUserData({ firestore, id: auth.currentUser.uid })).unwrap();
+          const userData = await dispatch(
+            fetchUserData({ firestore, id: auth.currentUser.uid })
+          ).unwrap();
           setFavorites(userData.favoriteToolsId || []);
-          setToolsFrequency(userData.toolsFrequency || [])
-   
+          setToolsFrequency(userData.toolsFrequency || []);
         } catch (error) {
-          console.error('Error fetching user data:', error);
-        } 
+          console.error("Error fetching user data:", error);
+        }
       }
     };
 
     fetchData();
   }, []);
-  
-  // Add (or remove) the tool to user "favorite" column. Update the favorite state 
+
+  // Add (or remove) the tool to user "favorite" column. Update the favorite state
   const handleToggleFavorite = (toolId) => {
-    const userId = auth.currentUser?.uid; 
+    const userId = auth.currentUser?.uid;
     if (!userId) {
-      console.error('User not authenticated');
+      console.error("User not authenticated");
       return;
     }
     setFavorites((prevFavorites) => {
       const isFavorite = prevFavorites.includes(toolId);
-  
-      updateFavorites(userId, toolId, isFavorite ? 'remove' : 'add');
-  
+
+      updateFavorites(userId, toolId, isFavorite ? "remove" : "add");
+
       return isFavorite
-        ? prevFavorites.filter((favId) => favId !== toolId) 
+        ? prevFavorites.filter((favId) => favId !== toolId)
         : [...prevFavorites, toolId];
     });
   };
 
-  
   const data = [...(unsortedData || [])].sort((a, b) => a.id - b.id);
-  
-  const sortedData = data.sort((a, b) => {
-    if (sortOption === 'A-Z') return a.name.localeCompare(b.name);
-    if (sortOption === 'Z-A') return b.name.localeCompare(a.name);
-    if (sortOption === 'Most Popular') return b.popularity - a.popularity;
-    if (sortOption === 'Recently Added')
-      return new Date(b.date) - new Date(a.date);
-  return 0;
-  });
 
+  const sortedData = data.sort((a, b) => {
+    if (sortOption === "A-Z") return a.name.localeCompare(b.name);
+    if (sortOption === "Z-A") return b.name.localeCompare(a.name);
+    if (sortOption === "Most Popular") return b.popularity - a.popularity;
+    if (sortOption === "Recently Added")
+      return new Date(b.date) - new Date(a.date);
+    return 0;
+  });
 
   const handleSearch = debounce((query) => {
     setSearchQuery(query);
   }, 300);
-
 
   // Cleanup debounce on unmount
   React.useEffect(() => {
@@ -120,21 +103,11 @@ const HomePage = ({ data: unsortedData, loading }) => {
       tool.description.toLowerCase().includes(lowerQuery)
     );
   });
-  
 
   const filteredTools = searchTools.filter((tool) => {
-    return currentTab === 'All' || tool.category.includes(currentTab);
+    return currentTab === "All" || tool.category.includes(currentTab);
   });
 
-
-
-  // contains the favorite tools data and will be passed to toolist container
-  const favoriteTools = filteredTools.filter((tool) =>
-    favorites.includes(tool.id)
-  );
-
-  // contains the 'recommend for you' tools data and will be passed to toolist container
-  const recommendTools = getTopTools(ToolsFrequency, filteredTools);
 
 
   // Welcome Banner
@@ -190,29 +163,25 @@ const HomePage = ({ data: unsortedData, loading }) => {
       {renderWelcomeBanner()}
       {renderFilters()}
 
-      {!searchQuery && ( 
+      {!searchQuery && (
         <>
-          <ToolsListingContainer
-            data={favoriteTools}
+          <Favorites
+            data={filteredTools}
             loading={loading}
             favorites={favorites}
             handleToggleFavorite={handleToggleFavorite}
-            category="Favorites"
           />
-          <ToolsListingContainer
-            data={recommendTools}
+          <RecomendedForYou
+            data={filteredTools}
             loading={loading}
+            toolsFrequency={toolsFrequency}
             favorites={favorites}
             handleToggleFavorite={handleToggleFavorite}
             category="Recommended For You"
           />
         </>
-        
-
-
       )}
-     
-     
+
       <ToolsListingContainer
         data={filteredTools}
         loading={loading}
