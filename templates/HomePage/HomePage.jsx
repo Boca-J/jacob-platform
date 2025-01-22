@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { fetchUserData } from "@/libs/redux/thunks/user";
 import { auth } from "@/libs/redux/store";
 import { useDispatch } from "react-redux";
@@ -18,6 +18,7 @@ import SearchBar from "@/tools/components/SearchBar/SearchBar";
 import SortDropdown from "@/tools/components/SortDorpdown/SortDropdown";
 import Favorites from "@/tools/views/Favorites";
 import RecomendedForYou from "@/tools/views/RecomendedForYou";
+import SearchResults from "@/tools/views/SearchResults";
 import { updateFavorites } from "@/libs/services/user/updateFavorites";
 
 const TABS = [
@@ -34,7 +35,7 @@ const HomePage = ({ data: unsortedData, loading }) => {
   const [currentTab, setCurrentTab] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("Most Popular");
-  const [favorites, setFavorites] = useState([]); // State to track favorite tool IDs
+  const [favorites, setFavorites] = useState([]);
   const [toolsFrequency, setToolsFrequency] = useState([]);
 
   const dispatch = useDispatch();
@@ -58,7 +59,6 @@ const HomePage = ({ data: unsortedData, loading }) => {
     fetchData();
   }, []);
 
-  // Add (or remove) the tool to user "favorite" column. Update the favorite state
   const handleToggleFavorite = (toolId) => {
     const userId = auth.currentUser?.uid;
     if (!userId) {
@@ -92,19 +92,12 @@ const HomePage = ({ data: unsortedData, loading }) => {
   }, 300);
 
   // Cleanup debounce on unmount
-  React.useEffect(() => {
-    return () => handleSearch.cancel(); // Cancel any pending debounce calls
+  useEffect(() => {
+    return () => handleSearch.cancel();
   }, [handleSearch]);
 
-  const searchTools = sortedData.filter((tool) => {
-    const lowerQuery = searchQuery.toLowerCase();
-    return (
-      tool.name.toLowerCase().includes(lowerQuery) ||
-      tool.description.toLowerCase().includes(lowerQuery)
-    );
-  });
-
-  const filteredTools = searchTools.filter((tool) => {
+  
+  const filteredTools = sortedData.filter((tool) => {
     return currentTab === "All" || tool.category.includes(currentTab);
   });
 
@@ -131,16 +124,9 @@ const HomePage = ({ data: unsortedData, loading }) => {
     </Grid>
   );
 
-  // Filters and Search
   const renderFilters = () => (
-    <Grid container direction="column" spacing={2}>
-      <Grid
-        item
-        container
-        alignItems="center"
-        spacing={2}
-        justifyContent="space-between"
-      >
+    <Grid {...styles.containerGridProps}>
+      <Grid {...styles.innerContainerGridProps}>
         <Grid item>
           <SearchBar onSearch={handleSearch} />
         </Grid>
@@ -148,7 +134,7 @@ const HomePage = ({ data: unsortedData, loading }) => {
           <SortDropdown sortOption={sortOption} setSortOption={setSortOption} />
         </Grid>
       </Grid>
-      <Grid item>
+      <Grid item {...styles.filtersGridProps}>
         <Filters
           tabs={TABS}
           activeTab={currentTab}
@@ -162,8 +148,19 @@ const HomePage = ({ data: unsortedData, loading }) => {
     <Grid {...styles.mainGridProps}>
       {renderWelcomeBanner()}
       {renderFilters()}
-
-      {!searchQuery && (
+  
+      {searchQuery ? (
+        // Render search results if searchQuery is not empty
+        <SearchResults
+          data={filteredTools}
+          loading={loading}
+          searchQuery={searchQuery}
+          favorites={favorites}
+          handleToggleFavorite={handleToggleFavorite}
+          category="Marvel Tools"
+        />
+      ) : (
+        // Render other components if searchQuery is empty
         <>
           <Favorites
             data={filteredTools}
@@ -179,18 +176,18 @@ const HomePage = ({ data: unsortedData, loading }) => {
             handleToggleFavorite={handleToggleFavorite}
             category="Recommended For You"
           />
+          <ToolsListingContainer
+            data={filteredTools}
+            loading={loading}
+            favorites={favorites}
+            handleToggleFavorite={handleToggleFavorite}
+            category="Marvel Tools"
+          />
         </>
       )}
-
-      <ToolsListingContainer
-        data={filteredTools}
-        loading={loading}
-        favorites={favorites}
-        handleToggleFavorite={handleToggleFavorite}
-        category="Marvel Tools"
-      />
     </Grid>
   );
+  
 };
 
 export default HomePage;

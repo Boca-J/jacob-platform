@@ -11,18 +11,20 @@ import { updateToolFrequency } from '@/libs/services/user/updateToolFrequency';
 
 
 /**
- * Returns a Tool Card component with an image and a chip displaying the amount of coins.
- *
- * @prop {string} id - The tool id.
- * @prop {string} maskedToolUrl - The masked tool URL used for routing.
- * @prop {string} backgroundImgURL - The URL of the background image.
- * @prop {string} name - The name of the tool.
- * @prop {string} description - The description of the tool.
- *
+ * Returns a Tool Card component.
+ * @param {object} props - The props object containing data, category, favorites, and toggle function.
+ * @prop {string} props.id - The tool id.
+ * @prop {string} props.maskedToolUrl - The masked tool URL used for routing.
+ * @prop {string} props.backgroundImgURL - The URL of the background image.
+ * @prop {string} props.name - The name of the tool.
+ * @prop {string} props.description - The description of the tool.
+ * @prop {string} props.favorite - The description of the tool.
+ * @param {function} props.handleToggleFavorite - Function to toggle a tool as favorite.
  * @return {JSX.Element} The Tool Card component.
  */
-const ToolCard = ({ id, name, description, maskedToolUrl, backgroundImgURL, favorites = [], handleToggleFavorite }) => {
-  // Check if TOOLS_ID is an object and id is present
+const ToolCard = (props) => {
+
+  const { id, name, description, maskedToolUrl, backgroundImgURL, favorites = [], handleToggleFavorite } = props
   const isPublished =
     TOOLS_ID &&
     typeof TOOLS_ID === 'object' &&

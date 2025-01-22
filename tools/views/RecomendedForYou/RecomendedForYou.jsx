@@ -2,7 +2,7 @@
 import { ToolsListingContainer } from '@/tools';
 
 /**
- * Renders the favorite tools Listings component.
+ * Renders the recommneded tools Listings component.
  *
  * @param {object} props - The props object containing data, category, favorites, and toggle function.
  * @param {object} props.data  - The list of data that contains tools.
