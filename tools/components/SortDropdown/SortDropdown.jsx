@@ -27,7 +27,6 @@ const SortDropdown = (props) => {
       >
         <MenuItem value="Most Popular">Most Popular</MenuItem>
         <MenuItem value="Recently Added">Recently Added</MenuItem>
-        <MenuItem value="Recommended">Recommended</MenuItem>
         <MenuItem value="A-Z">A-Z</MenuItem>
         <MenuItem value="Z-A">Z-A</MenuItem>
       </Select>

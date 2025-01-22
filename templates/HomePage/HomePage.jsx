@@ -141,23 +141,21 @@ const HomePage = ({ data: unsortedData, loading }) => {
     </Grid>
   );
 
-  return (
-    <Grid {...styles.mainGridProps}>
-      {renderWelcomeBanner()}
-      {renderFilters()}
-
-      {searchQuery ? (
-        // Render search results if searchQuery is not empty
-        <SearchResults
+  // Render the appropriate ToolsListingContainer if search query is empty
+  const renderDefaultTools = () => {
+    if (currentTab !== "All" && currentTab !== "") {
+      return (
+        <ToolsListingContainer
           data={filteredTools}
           loading={loading}
-          searchQuery={searchQuery}
           favorites={favorites}
           handleToggleFavorite={handleToggleFavorite}
-          category="Marvel Tools"
+          category={currentTab}
         />
-      ) : (
-        // Render other components if searchQuery is empty
+      );
+    }
+    else {
+      return (
         <>
           <Favorites
             data={filteredTools}
@@ -178,9 +176,31 @@ const HomePage = ({ data: unsortedData, loading }) => {
             loading={loading}
             favorites={favorites}
             handleToggleFavorite={handleToggleFavorite}
-            category="Marvel Tools"
+            category="All Tools"
           />
         </>
+      );
+    }
+  }
+
+  return (
+    <Grid {...styles.mainGridProps}>
+      {renderWelcomeBanner()}
+      {renderFilters()}
+
+      {searchQuery ? (
+        // Render search results if searchQuery is not empty
+        <SearchResults
+          data={filteredTools}
+          loading={loading}
+          searchQuery={searchQuery}
+          favorites={favorites}
+          handleToggleFavorite={handleToggleFavorite}
+          category="All Tools"
+        />
+      ) : (
+        // Render other components if searchQuery is empty
+        renderDefaultTools()
       )}
     </Grid>
   );
