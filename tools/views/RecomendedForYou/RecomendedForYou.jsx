@@ -11,19 +11,17 @@ import { ToolsListingContainer } from '@/tools';
  * @param {boolean} props.loading - Whether the data is still loading
  * @return {JSX.Element} The rendered Tools Listings component.
  */
-const RecomendedForYou = ({ data = [], loading, toolsFrequency, favorites, handleToggleFavorite}) => {
-    
+
+const RecomendedForYou = (props) => {
+    const { data = [], loading, toolsFrequency, favorites, handleToggleFavorite } = props
      // Function to extract top tools based on frequency
     const getTopTools = (toolsFrequency, data, limit = 4) => {
         
-        // Sort tools by frequency and get top tool IDs
+        
         const topToolIds = Object.entries(toolsFrequency)
         .sort(([, freqA], [, freqB]) => freqB - freqA)
         .slice(0, limit)
         .map(([toolId]) => toolId);
-
-        console.log(topToolIds)
-        // Filter tools from the existing data array
         
         return data.filter((tool) => topToolIds.includes(tool.id));
     };

@@ -13,8 +13,8 @@ import { ToolsListingContainer } from '@/tools';
  * @return {JSX.Element} The rendered Tools Listings component.
  */
 
-const SearchResults = ({ data = [], loading, searchQuery, favorites, handleToggleFavorite}) => {
-    
+const SearchResults = (props) => {
+    const { data = [], loading, searchQuery, favorites, handleToggleFavorite} = props
     const searchTools = data.filter((tool) => {
         const lowerQuery = searchQuery.toLowerCase();
         return (

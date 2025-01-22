@@ -13,9 +13,9 @@ import styles from "./styles";
 
 import { firestore } from "@/libs/redux/store";
 import { ToolsListingContainer } from "@/tools";
-import Filters from "@/tools/components/Filter/Filters";
-import SearchBar from "@/tools/components/SearchBar/SearchBar";
-import SortDropdown from "@/tools/components/SortDorpdown/SortDropdown";
+import Filters from "@/tools/components/Filters";
+import SearchBar from "@/tools/components/SearchBar";
+import SortDropdown from "@/tools/components/SortDropdown";
 import Favorites from "@/tools/views/Favorites";
 import RecomendedForYou from "@/tools/views/RecomendedForYou";
 import SearchResults from "@/tools/views/SearchResults";
@@ -96,12 +96,9 @@ const HomePage = ({ data: unsortedData, loading }) => {
     return () => handleSearch.cancel();
   }, [handleSearch]);
 
-  
   const filteredTools = sortedData.filter((tool) => {
     return currentTab === "All" || tool.category.includes(currentTab);
   });
-
-
 
   // Welcome Banner
   const renderWelcomeBanner = () => (
@@ -148,7 +145,7 @@ const HomePage = ({ data: unsortedData, loading }) => {
     <Grid {...styles.mainGridProps}>
       {renderWelcomeBanner()}
       {renderFilters()}
-  
+
       {searchQuery ? (
         // Render search results if searchQuery is not empty
         <SearchResults
@@ -187,7 +184,6 @@ const HomePage = ({ data: unsortedData, loading }) => {
       )}
     </Grid>
   );
-  
 };
 
 export default HomePage;
