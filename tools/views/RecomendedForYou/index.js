@@ -1,1 +1,1 @@
-export { default } from "./RecomendedForYou.jsx";
+export { default } from './RecomendedForYou.jsx';

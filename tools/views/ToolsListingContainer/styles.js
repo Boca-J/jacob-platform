@@ -41,7 +41,6 @@ const styles = {
     fontSize: '18px',
     color: '#6E6D73',
   },
-  
 };
 
 export default styles;
