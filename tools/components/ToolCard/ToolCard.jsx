@@ -1,13 +1,15 @@
 import React from 'react';
-import { Grid, Typography, IconButton, Card, Chip } from '@mui/material';
+import { Grid, Typography, Card, Chip } from '@mui/material';
 import { useRouter } from 'next/router';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import styles from './styles'; // Assuming styles is an object with the necessary styles
 
-import { auth } from '@/libs/redux/store';
 import { TOOLS_ID } from '@/tools/libs/constants/tools';
+import { firestore } from "@/libs/redux/store";
+import { useDispatch } from "react-redux";
+
 import  FavoriteButton from '@/tools/components/FavoriteButton'
-import { updateToolFrequency } from '@/libs/services/user/updateToolFrequency';
+import { updateToolFrequency} from '@/libs/redux/thunks/user'
 
 
 /**
@@ -31,11 +33,13 @@ const ToolCard = (props) => {
     Object.values(TOOLS_ID).includes(id);
 
   const router = useRouter();
-
+  const dispatch = useDispatch();
+  
   const handleRoute = () => {
     if (isPublished) {
-      const userId = auth.currentUser.uid;
-      updateToolFrequency(userId, id)
+      dispatch(
+        updateToolFrequency({ firestore,  toolId:id })
+      );
       router.push(`/${maskedToolUrl}`);
     }
 

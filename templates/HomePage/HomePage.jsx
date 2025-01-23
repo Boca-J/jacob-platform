@@ -1,17 +1,15 @@
-import { useState, useEffect, useMemo } from "react";
-import { fetchUserData } from "@/libs/redux/thunks/user";
-import { auth } from "@/libs/redux/store";
-import { useDispatch } from "react-redux";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import { Grid, Typography } from "@mui/material";
 import Image from "next/image";
 import { debounce } from "lodash";
-
 import ImageURLs from "@/assets/urls";
-
 import styles from "./styles";
 
 import { firestore } from "@/libs/redux/store";
+import { updateUserFavorite} from '@/libs/redux/thunks/user'
+
 import { ToolsListingContainer } from "@/tools";
 import Filters from "@/tools/components/Filters";
 import SearchBar from "@/tools/components/SearchBar";
@@ -19,7 +17,7 @@ import SortDropdown from "@/tools/components/SortDropdown";
 import Favorites from "@/tools/views/Favorites";
 import RecomendedForYou from "@/tools/views/RecomendedForYou";
 import SearchResults from "@/tools/views/SearchResults";
-import { updateFavorites } from "@/libs/services/user/updateFavorites";
+
 
 const TABS = [
   "All",
@@ -38,43 +36,31 @@ const HomePage = ({ data: unsortedData, loading }) => {
   const [favorites, setFavorites] = useState([]);
   const [toolsFrequency, setToolsFrequency] = useState([]);
 
+  const user = useSelector((state) => state?.user);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    // fetch user data and use the favortietools and toolsfrequency columns to set the states
-    const fetchData = async () => {
-      if (auth.currentUser.uid) {
-        try {
-          const userData = await dispatch(
-            fetchUserData({ firestore, id: auth.currentUser.uid })
-          ).unwrap();
-          setFavorites(userData.favoriteToolsId || []);
-          setToolsFrequency(userData.toolsFrequency || []);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const handleToggleFavorite = (toolId) => {
-    const userId = auth.currentUser?.uid;
-    if (!userId) {
-      console.error("User not authenticated");
-      return;
-    }
+  const handleToggleFavorite = (id) => {
     setFavorites((prevFavorites) => {
-      const isFavorite = prevFavorites.includes(toolId);
-
-      updateFavorites(userId, toolId, isFavorite ? "remove" : "add");
-
+      const isFavorite = prevFavorites.includes(id);
+      dispatch(
+        updateUserFavorite({
+          firestore, 
+          favoritesId: id,
+          command: isFavorite ? "remove" : "add" 
+        })
+      );
       return isFavorite
-        ? prevFavorites.filter((favId) => favId !== toolId)
-        : [...prevFavorites, toolId];
+        ? prevFavorites.filter((favId) => favId !== id)
+        : [...prevFavorites, id];
     });
   };
+
+  useEffect(() => {
+    if (user?.data) {
+      setFavorites(user.data.favoriteToolsId || []);
+      setToolsFrequency(user.data.toolsFrequency || []);
+    }
+  }, [user]);
 
   const data = [...(unsortedData || [])].sort((a, b) => a.id - b.id);
 
