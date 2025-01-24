@@ -16,7 +16,6 @@ const Home = () => {
     if (!data) dispatch(fetchTools());
   }, []);
 
-
   return <HomePage data={data} loading={loading} error={error} />;
 };
 
