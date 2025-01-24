@@ -8,8 +8,6 @@ jest.mock('@/tools', () => ({
   ToolsListingContainer: jest.fn(() => <div data-testid="tools-listing-container" />),
 }));
 
-
-  
 beforeEach(() => {
 jest.clearAllMocks(); // Ensure a clean mock state
 });

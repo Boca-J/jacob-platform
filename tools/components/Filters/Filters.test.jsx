@@ -32,7 +32,7 @@ describe("Filters Component", () => {
     render(<Filters tabs={tabs} activeTab="New" setActiveTab={setActiveTab} />);
 
     const activeTab = screen.getByText("New");
-    expect(activeTab).toHaveStyle("background-color: #9d74ff");
+    expect(activeTab).toHaveStyle("background-color: rgb(21, 101, 192)");
   });
 
   test("does not apply active style to inactive tabs", () => {

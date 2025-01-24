@@ -1,7 +1,17 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom'; // for assertions like toBeInTheDocument
+import '@testing-library/jest-dom';
 import Favorites from './Favorites';
+import { ToolsListingContainer } from '@/tools';
+
+// Mock ToolsListingContainer
+jest.mock('@/tools', () => ({
+  ToolsListingContainer: jest.fn(() => <div data-testid="tools-listing-container" />),
+}));
+
+beforeEach(() => {
+  jest.clearAllMocks(); // Reset mocks before each test
+});
 
 describe('Favorites Component', () => {
   const mockData = [
@@ -11,7 +21,6 @@ describe('Favorites Component', () => {
   ];
 
   const mockFavorites = ['1', '3'];
-
   const mockHandleToggleFavorite = jest.fn();
 
   test('renders successfully', () => {
@@ -25,10 +34,10 @@ describe('Favorites Component', () => {
     );
 
     // Verify that the component renders without crashing
-    expect(screen.getByText('Favorites')).toBeInTheDocument();
+    expect(screen.getByTestId('tools-listing-container')).toBeInTheDocument();
   });
 
-  test('displays the correct favorite tools', () => {
+  test('passes the correct favorite tools to ToolsListingContainer', () => {
     render(
       <Favorites
         data={mockData}
@@ -38,11 +47,45 @@ describe('Favorites Component', () => {
       />
     );
 
-    // Verify the favorite tools are rendered
-    expect(screen.getByText('Tool 1')).toBeInTheDocument();
-    expect(screen.getByText('Tool 3')).toBeInTheDocument();
+    const expectedTools = mockData.filter((tool) => mockFavorites.includes(tool.id));
 
-    // Ensure non-favorite tools are not rendered
-    expect(screen.queryByText('Tool 2')).not.toBeInTheDocument();
+    expect(ToolsListingContainer).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expectedTools }),
+      expect.anything()
+    );
+  });
+
+  test('handles an empty favorites list correctly', () => {
+    render(
+      <Favorites
+        data={mockData}
+        favorites={[]}
+        loading={false}
+        handleToggleFavorite={mockHandleToggleFavorite}
+      />
+    );
+
+    // Verify that no tools are passed to ToolsListingContainer
+    expect(ToolsListingContainer).toHaveBeenCalledWith(
+      expect.objectContaining({ data: [] }),
+      expect.anything()
+    );
+  });
+
+  test('handles the loading state correctly', () => {
+    render(
+      <Favorites
+        data={mockData}
+        favorites={mockFavorites}
+        loading={true}
+        handleToggleFavorite={mockHandleToggleFavorite}
+      />
+    );
+
+    // Verify that ToolsListingContainer is still rendered in a loading state
+    expect(ToolsListingContainer).toHaveBeenCalledWith(
+      expect.objectContaining({ loading: true }),
+      expect.anything()
+    );
   });
 });
