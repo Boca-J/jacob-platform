@@ -20,13 +20,14 @@ const DEFAULT_TOOLS = new Array(8)
  * @param {boolean} props.loading - Whether the data is still loading.
  * @return {JSX.Element} The rendered Tools Listings component.
  */
-const ToolsListingContainer = ({
-  data,
-  loading,
-  category,
-  favorites,
-  handleToggleFavorite,
-}) => {
+const ToolsListingContainer = (props) => {
+  const {
+    data,
+    loading,
+    category,
+    favorites,
+    handleToggleFavorite,
+  } = props
   const renderTitle = () => (
     <Grid {...styles.headerGridProps}>
       <Typography {...styles.categoryTitleProps}>
@@ -44,6 +45,7 @@ const ToolsListingContainer = ({
       if (!aInToolsId && bInToolsId) return 1;
       return 0;
     });
+
 
     return (
       <Grid {...styles.containerGridProps}>

@@ -1,10 +1,14 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import {
+  arrayRemove,
+  arrayUnion,
   collection,
   doc,
   getDocs,
+  increment,
   query,
   setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 
@@ -60,10 +64,12 @@ export const updateUserData = createAsyncThunk(
   }
 );
 
-// Thunk for submitting favourite tools data
 export const updateUserFavorite = createAsyncThunk(
   'userData/updateFavourite',
-  async ({ firestore, favorites }, { getState, rejectWithValue }) => {
+  async (
+    { firestore, favoritesId, command },
+    { getState, rejectWithValue }
+  ) => {
     try {
       const { auth } = getState();
       const userId = auth?.data?.uid;
@@ -71,15 +77,44 @@ export const updateUserFavorite = createAsyncThunk(
       if (!userId) {
         throw new Error('User ID is undefined');
       }
-
       const userDocRef = doc(firestore, 'users', userId);
-
-      await setDoc(userDocRef, favorites, { merge: true });
-
-      return favorites;
+      if (command === 'add') {
+        await updateDoc(userDocRef, {
+          favoriteToolsId: arrayUnion(favoritesId),
+        });
+      } else if (command === 'remove') {
+        await updateDoc(userDocRef, {
+          favoriteToolsId: arrayRemove(favoritesId),
+        });
+      }
+      return { favoritesId, command };
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log('error in updateUserData', error);
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Thunk for submitting toolid that user clicks
+export const updateToolFrequency = createAsyncThunk(
+  'userData/updateToolFrequency',
+  async ({ firestore, toolId }, { getState, rejectWithValue }) => {
+    try {
+      const { auth } = getState();
+      const userId = auth?.data?.uid;
+      if (!userId) {
+        throw new Error('User ID is undefined');
+      }
+
+      const userDocRef = doc(firestore, 'users', userId);
+      await updateDoc(userDocRef, {
+        [`toolsFrequency.${toolId}`]: increment(1),
+      });
+      return { toolId };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('error in updateToolFrequency', error);
       return rejectWithValue(error.message);
     }
   }

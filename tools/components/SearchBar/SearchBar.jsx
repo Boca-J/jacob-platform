@@ -1,40 +1,36 @@
 import { Search } from '@mui/icons-material';
 import { Grid, InputAdornment, TextField } from '@mui/material';
+import styles from './styles';
 
-const SearchBar = ({ onSearch }) => {
+
+
+/**
+ * Renders the SearchBar Component
+ * @param {Object} props - Component props.
+ * @param {function} props.onSearch - Callback function triggered when the input value changes. Receives the search query as an argument.
+ * @returns {JSX.Element} The rendered search bar component.
+ */
+
+const SearchBar = (props) => {
+  const { onSearch } = props
   const handleSearch = (event) => {
     onSearch(event.target.value);
   };
 
   return (
-    <Grid item xs={12} sx={{ marginBottom: '16px' }}>
+    <Grid {...styles.mainGridProps}>
       <TextField
         placeholder="Search for a tool"
         variant="outlined"
         onChange={handleSearch}
         InputProps={{
           startAdornment: (
-            // added the position to make it to the left of the page as in the design and line up with the first filter "All"
             <InputAdornment position="start">
               <Search />
             </InputAdornment>
           ),
         }}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: '24px',
-            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-            '& fieldset': {
-              borderColor: '#9d74ff',
-            },
-            '&:hover fieldset': {
-              borderColor: '#9d74ff',
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: '#9d74ff',
-            },
-          },
-        }}
+        {...styles.textFieldProps}
       />
     </Grid>
   );

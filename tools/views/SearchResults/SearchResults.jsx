@@ -2,34 +2,39 @@
 import { ToolsListingContainer } from '@/tools';
 
 /**
- * Renders the favorite tools Listings component.
- 
+ * Renders the tools Listings component that matches with the search query.
+ *
  * @param {object} props - The props object containing data, category, favorites, and toggle function.
  * @param {object} props.data  - The list of data that contains tools.
+ * @param {object} props.searchQuery - The search query 
  * @param {object} props.favorites - The list of favorite tool IDs.
  * @param {function} props.handleToggleFavorite - Function to toggle a tool as favorite.
  * @param {boolean} props.loading - Whether the data is still loading
  * @return {JSX.Element} The rendered Tools Listings component.
  */
 
-const Favorites = (props) => {
-    const { data = [], loading, favorites, handleToggleFavorite} = props
-    const favoriteTools = data.filter((tool) =>
-        favorites.includes(tool.id)
-    );
+const SearchResults = (props) => {
+    const { data = [], loading, searchQuery, favorites, handleToggleFavorite} = props
+    const searchTools = data.filter((tool) => {
+        const lowerQuery = searchQuery.toLowerCase();
+        return (
+          tool.name.toLowerCase().includes(lowerQuery) ||
+          tool.description.toLowerCase().includes(lowerQuery)
+        );
+      });
+    
+
     return (
         <ToolsListingContainer
-            data={favoriteTools}
+            data={searchTools}
             loading={loading}
             favorites={favorites}
             handleToggleFavorite={handleToggleFavorite}
-            category="Favorites"
+            category="Search Results"
         />
     );
 
    
 }; 
 
-
-
-export default Favorites;
+export default  SearchResults ;

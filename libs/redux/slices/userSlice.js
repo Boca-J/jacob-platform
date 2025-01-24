@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import {
   fetchUserData,
+  updateToolFrequency,
   updateUserData,
   updateUserFavorite,
 } from '../thunks/user';
@@ -49,20 +50,41 @@ const userSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(updateUserFavorite.pending, (state) => {
+      .addCase(updateUserFavorite.rejected, (state, action) => {
         state.loading = true;
+        state.error = action.payload;
+      })
+      .addCase(updateUserFavorite.pending, (state) => {
+        state.loading = false;
         state.error = null;
       })
       .addCase(updateUserFavorite.fulfilled, (state, action) => {
-        state.loading = false;
-        if (!state.data) {
-          state.data = {};
+        const { favoritesId, command } = action.payload;
+        if (command === 'add') {
+          state.data.favoriteToolsId = [
+            ...(state.data.favoriteToolsId || []),
+            favoritesId,
+          ];
+        } else if (command === 'remove') {
+          state.data.favoriteToolsId = state.data.favoriteToolsId.filter(
+            (id) => id !== favoritesId
+          );
         }
-        state.data.favorites = action.payload.favorites;
       })
-      .addCase(updateUserFavorite.rejected, (state, action) => {
-        state.loading = false;
+      .addCase(updateToolFrequency.rejected, (state, action) => {
         state.error = action.payload;
+      })
+      .addCase(updateToolFrequency.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(updateToolFrequency.fulfilled, (state, action) => {
+        state.loading = false;
+        const { toolId } = action.payload;
+        if (!state.data.toolsFrequency[toolId]) {
+          state.data.toolsFrequency[toolId] = 1;
+        } else {
+          state.data.toolsFrequency[toolId] += 1;
+        }
       });
   },
 });

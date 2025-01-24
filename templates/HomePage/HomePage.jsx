@@ -1,83 +1,90 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { Grid, Typography } from '@mui/material';
-import Image from 'next/image';
+import { Grid, Typography } from "@mui/material";
+import Image from "next/image";
+import { debounce } from "lodash";
+import ImageURLs from "@/assets/urls";
+import styles from "./styles";
 
-import { useDispatch, useSelector } from 'react-redux';
+import { firestore } from "@/libs/redux/store";
+import { updateUserFavorite} from '@/libs/redux/thunks/user'
 
-import ImageURLs from '@/assets/urls';
+import { ToolsListingContainer } from "@/tools";
+import Filters from "@/tools/components/Filters";
+import SearchBar from "@/tools/components/SearchBar";
+import SortDropdown from "@/tools/components/SortDropdown";
+import Favorites from "@/tools/views/Favorites";
+import RecomendedForYou from "@/tools/views/RecomendedForYou";
+import SearchResults from "@/tools/views/SearchResults";
 
-import styles from './styles';
-
-import { firestore } from '@/libs/redux/store';
-import { updateUserFavorite } from '@/libs/redux/thunks/user';
-
-import { ToolsListingContainer } from '@/tools';
-import Filters from '@/tools/components/Filter/Filters';
-import SearchBar from '@/tools/components/SearchBar/SearchBar';
-import SortDropdown from '@/tools/components/SortDorpdown/SortDropdown';
-import Favorites from '@/tools/views/Favorites/Favorites';
-import ReccomendedForYou from '@/tools/views/ReccomendedForYou/ReccomendedForYou';
 
 const TABS = [
-  'All',
-  'New',
-  'Planning',
-  'Assessments',
-  'Assignments',
-  'Writing',
-  'Study',
+  "All",
+  "New",
+  "Planning",
+  "Assessments",
+  "Assignments",
+  "Writing",
+  "Study",
 ];
 
 const HomePage = ({ data: unsortedData, loading }) => {
-  const [currentTab, setCurrentTab] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState('Most Popular');
-  const [favorites, setFavorites] = useState([]); // State to track favorite tool IDs
+  const [currentTab, setCurrentTab] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("Most Popular");
+  const [favorites, setFavorites] = useState([]);
+  const [toolsFrequency, setToolsFrequency] = useState([]);
 
   const user = useSelector((state) => state?.user);
   const dispatch = useDispatch();
+
   const handleToggleFavorite = (id) => {
     setFavorites((prevFavorites) => {
-      const updatedFavorites = prevFavorites.includes(id)
-        ? prevFavorites.filter((favId) => favId !== id) // Remove if already in favorites
-        : [...prevFavorites, id]; // Add if not in favorites
-      const updatedFavoritesObj = { favorites: updatedFavorites };
+      const isFavorite = prevFavorites.includes(id);
       dispatch(
-        updateUserFavorite({ firestore, favorites: updatedFavoritesObj })
+        updateUserFavorite({
+          firestore, 
+          favoritesId: id,
+          command: isFavorite ? "remove" : "add" 
+        })
       );
-      return updatedFavorites;
+      return isFavorite
+        ? prevFavorites.filter((favId) => favId !== id)
+        : [...prevFavorites, id];
     });
   };
+
   useEffect(() => {
-    if (user?.data?.favorites) {
-      setFavorites(user.data.favorites);
+    if (user?.data) {
+      setFavorites(user.data.favoriteToolsId || []);
+      setToolsFrequency(user.data.toolsFrequency || []);
     }
   }, [user]);
 
   const data = [...(unsortedData || [])].sort((a, b) => a.id - b.id);
 
-  // Filter and search logic
-  const filteredData = data.filter((tool) => {
-    const matchesSearch = tool.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesTab = currentTab === 'All' || tool.category === currentTab;
-    return matchesSearch && matchesTab;
-  });
-
-  const sortedData = filteredData.sort((a, b) => {
-    if (sortOption === 'A-Z') return a.name.localeCompare(b.name);
-    if (sortOption === 'Z-A') return b.name.localeCompare(a.name);
-    if (sortOption === 'Most Popular') return b.popularity - a.popularity;
-    if (sortOption === 'Recently Added')
+  const sortedData = data.sort((a, b) => {
+    if (sortOption === "A-Z") return a.name.localeCompare(b.name);
+    if (sortOption === "Z-A") return b.name.localeCompare(a.name);
+    if (sortOption === "Most Popular") return b.popularity - a.popularity;
+    if (sortOption === "Recently Added")
       return new Date(b.date) - new Date(a.date);
     return 0;
   });
 
-  const favoriteTools = sortedData.filter((tool) =>
-    favorites.includes(tool.id)
-  );
+  const handleSearch = debounce((query) => {
+    setSearchQuery(query);
+  }, 300);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => handleSearch.cancel();
+  }, [handleSearch]);
+
+  const filteredTools = sortedData.filter((tool) => {
+    return currentTab === "All" || tool.category.includes(currentTab);
+  });
 
   // Welcome Banner
   const renderWelcomeBanner = () => (
@@ -100,24 +107,17 @@ const HomePage = ({ data: unsortedData, loading }) => {
     </Grid>
   );
 
-  // Filters and Search
   const renderFilters = () => (
-    <Grid container direction="column" spacing={2}>
-      <Grid
-        item
-        container
-        alignItems="center"
-        spacing={2}
-        justifyContent="space-between"
-      >
+    <Grid {...styles.containerGridProps}>
+      <Grid {...styles.innerContainerGridProps}>
         <Grid item>
-          <SearchBar onSearch={setSearchQuery} />
+          <SearchBar onSearch={handleSearch} />
         </Grid>
         <Grid item>
           <SortDropdown sortOption={sortOption} setSortOption={setSortOption} />
         </Grid>
       </Grid>
-      <Grid item>
+      <Grid item {...styles.filtersGridProps}>
         <Filters
           tabs={TABS}
           activeTab={currentTab}
@@ -127,23 +127,67 @@ const HomePage = ({ data: unsortedData, loading }) => {
     </Grid>
   );
 
+  // Render the appropriate ToolsListingContainer if search query is empty
+  const renderDefaultTools = () => {
+    if (currentTab !== "All" && currentTab !== "") {
+      return (
+        <ToolsListingContainer
+          data={filteredTools}
+          loading={loading}
+          favorites={favorites}
+          handleToggleFavorite={handleToggleFavorite}
+          category={currentTab}
+        />
+      );
+    }
+    else {
+      return (
+        <>
+          <Favorites
+            data={filteredTools}
+            loading={loading}
+            favorites={favorites}
+            handleToggleFavorite={handleToggleFavorite}
+          />
+          <RecomendedForYou
+            data={filteredTools}
+            loading={loading}
+            toolsFrequency={toolsFrequency}
+            favorites={favorites}
+            handleToggleFavorite={handleToggleFavorite}
+            category="Recommended For You"
+          />
+          <ToolsListingContainer
+            data={filteredTools}
+            loading={loading}
+            favorites={favorites}
+            handleToggleFavorite={handleToggleFavorite}
+            category="All Tools"
+          />
+        </>
+      );
+    }
+  }
+
   return (
     <Grid {...styles.mainGridProps}>
       {renderWelcomeBanner()}
       {renderFilters()}
-      <Favorites
-        favoriteTools={favoriteTools}
-        handleToggleFavorite={handleToggleFavorite}
-        favorites={favorites}
-      />
-      <ReccomendedForYou data={sortedData} loading={loading} />
-      <ToolsListingContainer
-        data={sortedData}
-        loading={loading}
-        favorites={favorites}
-        handleToggleFavorite={handleToggleFavorite}
-        category="Marvel Tools"
-      />
+
+      {searchQuery ? (
+        // Render search results if searchQuery is not empty
+        <SearchResults
+          data={filteredTools}
+          loading={loading}
+          searchQuery={searchQuery}
+          favorites={favorites}
+          handleToggleFavorite={handleToggleFavorite}
+          category="All Tools"
+        />
+      ) : (
+        // Render other components if searchQuery is empty
+        renderDefaultTools()
+      )}
     </Grid>
   );
 };
