@@ -59,6 +59,7 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(updateUserFavorite.fulfilled, (state, action) => {
+        state.loading = false;
         const { favoritesId, command } = action.payload;
         if (command === 'add') {
           state.data.favoriteToolsId = [
@@ -72,9 +73,11 @@ const userSlice = createSlice({
         }
       })
       .addCase(updateToolFrequency.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
       .addCase(updateToolFrequency.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(updateToolFrequency.fulfilled, (state, action) => {
